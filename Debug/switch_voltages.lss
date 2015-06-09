@@ -1,0 +1,311 @@
+
+switch_voltages.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000114  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00000114  000001a8  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000002  00800060  00800060  000001a8  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  000001a8  2**0
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000028  00000000  00000000  000001d8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   00000207  00000000  00000000  00000200  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000118  00000000  00000000  00000407  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   00000197  00000000  00000000  0000051f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000048  00000000  00000000  000006b8  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    000001a5  00000000  00000000  00000700  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000049  00000000  00000000  000008a5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000018  00000000  00000000  000008ee  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0e c0       	rjmp	.+28     	; 0x1e <__ctors_end>
+   2:	1b c0       	rjmp	.+54     	; 0x3a <__bad_interrupt>
+   4:	1a c0       	rjmp	.+52     	; 0x3a <__bad_interrupt>
+   6:	19 c0       	rjmp	.+50     	; 0x3a <__bad_interrupt>
+   8:	18 c0       	rjmp	.+48     	; 0x3a <__bad_interrupt>
+   a:	17 c0       	rjmp	.+46     	; 0x3a <__bad_interrupt>
+   c:	16 c0       	rjmp	.+44     	; 0x3a <__bad_interrupt>
+   e:	15 c0       	rjmp	.+42     	; 0x3a <__bad_interrupt>
+  10:	15 c0       	rjmp	.+42     	; 0x3c <__vector_8>
+  12:	13 c0       	rjmp	.+38     	; 0x3a <__bad_interrupt>
+  14:	12 c0       	rjmp	.+36     	; 0x3a <__bad_interrupt>
+  16:	11 c0       	rjmp	.+34     	; 0x3a <__bad_interrupt>
+  18:	10 c0       	rjmp	.+32     	; 0x3a <__bad_interrupt>
+  1a:	0f c0       	rjmp	.+30     	; 0x3a <__bad_interrupt>
+  1c:	0e c0       	rjmp	.+28     	; 0x3a <__bad_interrupt>
+
+0000001e <__ctors_end>:
+  1e:	11 24       	eor	r1, r1
+  20:	1f be       	out	0x3f, r1	; 63
+  22:	cf ed       	ldi	r28, 0xDF	; 223
+  24:	cd bf       	out	0x3d, r28	; 61
+
+00000026 <__do_clear_bss>:
+  26:	20 e0       	ldi	r18, 0x00	; 0
+  28:	a0 e6       	ldi	r26, 0x60	; 96
+  2a:	b0 e0       	ldi	r27, 0x00	; 0
+  2c:	01 c0       	rjmp	.+2      	; 0x30 <.do_clear_bss_start>
+
+0000002e <.do_clear_bss_loop>:
+  2e:	1d 92       	st	X+, r1
+
+00000030 <.do_clear_bss_start>:
+  30:	a2 36       	cpi	r26, 0x62	; 98
+  32:	b2 07       	cpc	r27, r18
+  34:	e1 f7       	brne	.-8      	; 0x2e <.do_clear_bss_loop>
+  36:	25 d0       	rcall	.+74     	; 0x82 <main>
+  38:	6b c0       	rjmp	.+214    	; 0x110 <_exit>
+
+0000003a <__bad_interrupt>:
+  3a:	e2 cf       	rjmp	.-60     	; 0x0 <__vectors>
+
+0000003c <__vector_8>:
+#define ADC_VREF_TYPE 0x00
+//****************************************************************************************
+// ADC interrupt service routine
+//****************************************************************************************
+ISR (ADC_vect)
+{
+  3c:	1f 92       	push	r1
+  3e:	0f 92       	push	r0
+  40:	0f b6       	in	r0, 0x3f	; 63
+  42:	0f 92       	push	r0
+  44:	11 24       	eor	r1, r1
+  46:	8f 93       	push	r24
+  48:	9f 93       	push	r25
+	//---------------------------------------------------------------------------------------
+	// Read the AD conversion result
+	adc_data=ADCW;
+  4a:	84 b1       	in	r24, 0x04	; 4
+  4c:	95 b1       	in	r25, 0x05	; 5
+	if (adc_data<50)
+  4e:	82 33       	cpi	r24, 0x32	; 50
+  50:	91 05       	cpc	r25, r1
+  52:	28 f0       	brcs	.+10     	; 0x5e <__SREG__+0x1f>
+//****************************************************************************************
+ISR (ADC_vect)
+{
+	//---------------------------------------------------------------------------------------
+	// Read the AD conversion result
+	adc_data=ADCW;
+  54:	90 93 61 00 	sts	0x0061, r25
+  58:	80 93 60 00 	sts	0x0060, r24
+  5c:	06 c0       	rjmp	.+12     	; 0x6a <__SREG__+0x2b>
+	if (adc_data<50)
+	{
+		//---------------------------------------------------------------------------------------
+		adc_data=50;
+  5e:	82 e3       	ldi	r24, 0x32	; 50
+  60:	90 e0       	ldi	r25, 0x00	; 0
+  62:	90 93 61 00 	sts	0x0061, r25
+  66:	80 93 60 00 	sts	0x0060, r24
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  6a:	8a e1       	ldi	r24, 0x1A	; 26
+  6c:	8a 95       	dec	r24
+  6e:	f1 f7       	brne	.-4      	; 0x6c <__SREG__+0x2d>
+  70:	00 c0       	rjmp	.+0      	; 0x72 <__SREG__+0x33>
+		//---------------------------------------------------------------------------------------
+	};
+	_delay_us(10);
+	// Start the AD conversion
+	ADCSRA|=0x40;
+  72:	36 9a       	sbi	0x06, 6	; 6
+	//---------------------------------------------------------------------------------------
+	return;
+};
+  74:	9f 91       	pop	r25
+  76:	8f 91       	pop	r24
+  78:	0f 90       	pop	r0
+  7a:	0f be       	out	0x3f, r0	; 63
+  7c:	0f 90       	pop	r0
+  7e:	1f 90       	pop	r1
+  80:	18 95       	reti
+
+00000082 <main>:
+static void init_periphery (void)
+{
+	//---------------------------------------------------------------------------------------
+	// Crystal Oscillator division factor: 2
+	//#pragma optsize-
+	CLKPR=0x80;
+  82:	80 e8       	ldi	r24, 0x80	; 128
+  84:	86 bd       	out	0x26, r24	; 38
+	CLKPR=0x00;
+  86:	16 bc       	out	0x26, r1	; 38
+	
+	// Input/Output Ports initialization
+	// Port B initialization
+	// Func5=Out Func4=Out Func3=Out Func2=In Func1=Out Func0=Out
+	// State5=0 State4=0 State3=0 State2=T State1=0 State0=0
+	PORTB=0x00;
+  88:	18 ba       	out	0x18, r1	; 24
+	DDRB=0x3B;
+  8a:	9b e3       	ldi	r25, 0x3B	; 59
+  8c:	97 bb       	out	0x17, r25	; 23
+	// Clock source: System Clock
+	// Clock value: Timer 0 Stopped
+	// Mode: Normal top=0xFF
+	// OC0A output: Disconnected
+	// OC0B output: Disconnected
+	TCCR0A=0x00;
+  8e:	1a bc       	out	0x2a, r1	; 42
+	TCCR0B=0x00;
+  90:	13 be       	out	0x33, r1	; 51
+	TCNT0=0x00;
+  92:	12 be       	out	0x32, r1	; 50
+	OCR0A=0x00;
+  94:	19 bc       	out	0x29, r1	; 41
+	OCR0B=0x00;
+  96:	18 bc       	out	0x28, r1	; 40
+	// OC1A output: Disconnected
+	// OC1B output: Disconnected
+	// Timer1 Overflow Interrupt: Off
+	// Compare A Match Interrupt: Off
+	// Compare B Match Interrupt: Off
+	PLLCSR=0x00;
+  98:	17 bc       	out	0x27, r1	; 39
+
+	TCCR1=0x00;
+  9a:	10 be       	out	0x30, r1	; 48
+	GTCCR=0x00;
+  9c:	1c bc       	out	0x2c, r1	; 44
+	TCNT1=0x00;
+  9e:	1f bc       	out	0x2f, r1	; 47
+	OCR1A=0x00;
+  a0:	1e bc       	out	0x2e, r1	; 46
+	OCR1B=0x00;
+  a2:	1b bc       	out	0x2b, r1	; 43
+	OCR1C=0x00;
+  a4:	1d bc       	out	0x2d, r1	; 45
+
+	// External Interrupt(s) initialization
+	// INT0: Off
+	GIMSK=0x00;
+  a6:	1b be       	out	0x3b, r1	; 59
+	MCUCR=0x00;
+  a8:	15 be       	out	0x35, r1	; 53
+
+	// Timer(s)/Counter(s) Interrupt(s) initialization
+	TIMSK=0x00;
+  aa:	19 be       	out	0x39, r1	; 57
+
+	// Universal Serial Interface initialization
+	// Mode: Disabled
+	// Clock source: Register & Counter=no clk.
+	// USI Counter Overflow Interrupt: Off
+	USICR=0x00;
+  ac:	1d b8       	out	0x0d, r1	; 13
+
+	// Analog Comparator initialization
+	// Analog Comparator: Off
+	ACSR=0x80;
+  ae:	88 b9       	out	0x08, r24	; 8
+	ADCSRB=0x00;
+  b0:	13 b8       	out	0x03, r1	; 3
+	DIDR0=0x00;
+  b2:	14 ba       	out	0x14, r1	; 20
+	// ADC Voltage Reference: AVCC pin
+	// ADC Bipolar Input Mode: Off
+	// ADC Reverse Input Polarity: Off
+	// ADC Auto Trigger Source: Free Running
+	// Digital input buffers on ADC0: On, ADC1: On, ADC2: On, ADC3: On
+	DIDR0&=0x03;
+  b4:	84 b3       	in	r24, 0x14	; 20
+  b6:	83 70       	andi	r24, 0x03	; 3
+  b8:	84 bb       	out	0x14, r24	; 20
+	DIDR0|=0x00;
+  ba:	84 b3       	in	r24, 0x14	; 20
+  bc:	84 bb       	out	0x14, r24	; 20
+	ADMUX=0x01 | (ADC_VREF_TYPE & 0xff);
+  be:	81 e0       	ldi	r24, 0x01	; 1
+  c0:	87 b9       	out	0x07, r24	; 7
+	ADCSRA=0xEF;
+  c2:	8f ee       	ldi	r24, 0xEF	; 239
+  c4:	86 b9       	out	0x06, r24	; 6
+	ADCSRB&=0x58;
+  c6:	83 b1       	in	r24, 0x03	; 3
+  c8:	88 75       	andi	r24, 0x58	; 88
+  ca:	83 b9       	out	0x03, r24	; 3
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+  cc:	2f ef       	ldi	r18, 0xFF	; 255
+  ce:	80 e7       	ldi	r24, 0x70	; 112
+  d0:	92 e0       	ldi	r25, 0x02	; 2
+  d2:	21 50       	subi	r18, 0x01	; 1
+  d4:	80 40       	sbci	r24, 0x00	; 0
+  d6:	90 40       	sbci	r25, 0x00	; 0
+  d8:	e1 f7       	brne	.-8      	; 0xd2 <main+0x50>
+  da:	00 c0       	rjmp	.+0      	; 0xdc <main+0x5a>
+  dc:	00 00       	nop
+{
+	//---------------------------------------------------------------------------------------
+	init_periphery ();
+	//---------------------------------------------------------------------------------------
+	//Global enable interrupts
+	sei();
+  de:	78 94       	sei
+  e0:	2f e7       	ldi	r18, 0x7F	; 127
+  e2:	88 e3       	ldi	r24, 0x38	; 56
+  e4:	91 e0       	ldi	r25, 0x01	; 1
+  e6:	21 50       	subi	r18, 0x01	; 1
+  e8:	80 40       	sbci	r24, 0x00	; 0
+  ea:	90 40       	sbci	r25, 0x00	; 0
+  ec:	e1 f7       	brne	.-8      	; 0xe6 <__stack+0x7>
+  ee:	00 c0       	rjmp	.+0      	; 0xf0 <__stack+0x11>
+  f0:	00 00       	nop
+    {
+        //TODO:: Please write your application code 
+		//---------------------------------------------------------------------------------------
+		_delay_ms(50);
+		//---------------------------------------------------------------------------------------
+		if (adc_data>=THRESHOLD_H)
+  f2:	80 91 60 00 	lds	r24, 0x0060
+  f6:	90 91 61 00 	lds	r25, 0x0061
+  fa:	86 32       	cpi	r24, 0x26	; 38
+  fc:	22 e0       	ldi	r18, 0x02	; 2
+  fe:	92 07       	cpc	r25, r18
+ 100:	10 f0       	brcs	.+4      	; 0x106 <__stack+0x27>
+		{
+			//---------------------------------------------------------------------------------------
+			ON_50V
+ 102:	c0 9a       	sbi	0x18, 0	; 24
+ 104:	ed cf       	rjmp	.-38     	; 0xe0 <__stack+0x1>
+			//---------------------------------------------------------------------------------------
+		} 
+		else if (adc_data<=THRESHOLD_L)
+ 106:	83 3c       	cpi	r24, 0xC3	; 195
+ 108:	91 40       	sbci	r25, 0x01	; 1
+ 10a:	50 f7       	brcc	.-44     	; 0xe0 <__stack+0x1>
+		{
+			//---------------------------------------------------------------------------------------
+			ON_25V
+ 10c:	c0 98       	cbi	0x18, 0	; 24
+ 10e:	e8 cf       	rjmp	.-48     	; 0xe0 <__stack+0x1>
+
+00000110 <_exit>:
+ 110:	f8 94       	cli
+
+00000112 <__stop_program>:
+ 112:	ff cf       	rjmp	.-2      	; 0x112 <__stop_program>
